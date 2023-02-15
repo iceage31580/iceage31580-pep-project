@@ -1,44 +1,48 @@
-package Controller; 
+package Controller;
 
 import static org.mockito.ArgumentMatchers.nullable;
 
-import java.util.List; 
+import java.util.List;
 
-import javax.lang.model.util.ElementScanner6; 
-
-import org.eclipse.jetty.websocket.core.internal.messages.MessageSink; 
-
-import com.fasterxml.jackson.core.JsonProcessingException; 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import Model.Account; 
-import Model.Message; 
-import io.javalin.Javalin; 
-import io.javalin.http.Context; 
+import Model.Account;
+import Model.Message;
+import Service.AccountService;
+import Service.MessageService;
+import io.javalin.Javalin;
+import io.javalin.http.Context;
 
-import Service.AccountService; 
-import Service.MessageService; 
 
 
-public class SocialMediaController{
+
+public class SocialMediaController {
     AccountService accountService; 
     MessageService messageService; 
 
-    public Javalin startAPI()
-    {
-        Javalin app = Javalin.create();
-        app.post("/register", this::AddedAccountHandler); 
-        app.post("/login", this::LoginHandler); //changed this, 
-        app.get("/messages", this::getAllMessagesHandler); 
-        app.post("/messages", this::insertMessage); 
-        app.delete("/messages/{message_id}", this::deleteResponseHandler); 
-        app.get("/message/{message_id}", this::getMessagebyIdHandler); 
-        app.patch("/messages/{message_id}", this::updateResponseHandler);
-        app.get("/account/{account_id}/messages", this::getMessagebyAccountIdHandler); 
+    public SocialMediaController() {
+        this.accountService = new AccountService(); 
+        this.messageService = new MessageService();  
 
-        return app; 
+    }
+    
+    public Javalin startAPI() {
+        Javalin app = Javalin.create();
+        app.post("/register", this::AddedAccountHandler); //1
+        app.post("/login", this::LoginHandler); //2
+        app.post("/messages", this::insertMessage); //3 
+        app.get("/messages", this::getAllMessagesHandler); //4 
+        app.get("/messages/{message_id}", this::getMessagebyIdHandler); //5
+        app.delete("/messages/{message_id}", this::deleteResponseHandler); //6
+        app.patch("/messages/{message_id}", this::updateResponseHandler); //7
+        app.get("/accounts/{account_id}/messages", this::getMessagebyAccountIdHandler); //8
+        
+
+        return app;
     }
 
+    
     private void AddedAccountHandler(Context ctx) throws JsonProcessingException 
     {
         ObjectMapper mapper = new ObjectMapper(); 
@@ -53,8 +57,6 @@ public class SocialMediaController{
             {
                 ctx.status(400); 
             }
-        
-
 
     }
 
@@ -70,21 +72,8 @@ public class SocialMediaController{
             }
             else
             {
-                ctx.status(400); 
+                ctx.status(401); 
             }
-        
-
-    }
-
-    private void getAllMessagesHandler(Context ctx) throws JsonProcessingException
-    {
-        List<Message> message = messageService.getAllMessages(); 
-        ctx.json(message); 
-
-        ObjectMapper mapper = new ObjectMapper(); 
-        ctx.json(mapper.writeValueAsString(message)); 
-        ctx.status(200); 
-
 
     }
 
@@ -109,6 +98,13 @@ public class SocialMediaController{
         }
     }
 
+    private void getAllMessagesHandler(Context ctx) throws JsonProcessingException
+    {
+        List<Message> message = messageService.getAllMessages(); 
+        ctx.json(message); 
+        ctx.status(200); 
+    }
+
     private void getMessagebyIdHandler(Context ctx) throws JsonProcessingException
     {
         int Message_id = Integer.parseInt(ctx.pathParam("message_id")); 
@@ -122,26 +118,6 @@ public class SocialMediaController{
         {
             ctx.status(400); 
         }
-    }
-
-    private void updateResponseHandler(Context ctx) throws JsonProcessingException
-    {
-        ObjectMapper mapper = new ObjectMapper(); 
-        Message message = mapper.readValue(ctx.body(), Message.class); 
-        int updatedMessage = Integer.parseInt(ctx.pathParam("message_id")); 
-        Message existingMessage = messageService.updateMessages(updatedMessage, message); 
-        if(existingMessage != null)
-        {
-            ctx.json(mapper.writeValueAsString(existingMessage)); 
-            ctx.status(200); 
-        }
-        else
-        {
-            ctx.status(400); 
-        }
-
-        
-
     }
 
     private void deleteResponseHandler(Context ctx) throws JsonProcessingException
@@ -162,22 +138,95 @@ public class SocialMediaController{
             }
         }
 
-        private void getMessagebyAccountIdHandler(Context ctx) throws JsonProcessingException
+        private void updateResponseHandler(Context ctx) throws JsonProcessingException
+    {
+        ObjectMapper mapper = new ObjectMapper(); 
+        Message message = mapper.readValue(ctx.body(), Message.class); 
+        int updatedMessage = Integer.parseInt(ctx.pathParam("message_id")); 
+        Message existingMessage = messageService.updateMessages(updatedMessage, message); 
+        if(existingMessage != null)
         {
-            int accountId = Integer.parseInt(ctx.pathParam("account_id")); 
-            List<Message> messages = messageService.gettingMessagesByAccountId(accountId); 
-            if(messages != null)
-            {
-                ctx.json(messages); 
-                ctx.status(200); 
-            }
-            else
-            {
-                ctx.status(400); 
-            }
-
+            ctx.json(mapper.writeValueAsString(existingMessage)); 
+            ctx.status(200); 
         }
- 
-   
+        else
+        {
+            ctx.status(400); 
+        }
 
+        
+
+    }
+
+    
+
+    private void getMessagebyAccountIdHandler(Context ctx)throws JsonProcessingException {
+        List<Message> messages = messageService.returnMessagebyAccountID(1);
+        ctx.json(messages);
+    }
+    
+   
 }
+
+  //int accountId = Integer.parseInt(ctx.pathParam("account_id")); 
+        //List<Message> messages = messageService.gettingMessagesByAccountId(accountId); 
+
+        /* 
+        if(messages != null)
+        {
+            ctx.json(messages); 
+            ctx.status(200); 
+        }
+        else
+        {
+            ctx.status(400); 
+        }
+        */
+
+  /* 
+ 
+    private void getMessagebyAccountIdHandler(Context ctx) throws JsonProcessingException
+    {
+
+        String returnMessagebyId = ctx.pathParam("account_id"); 
+        List<Message> messageById = messageService.gettingMessagesByAccountId(Integer.parseInt(returnMessagebyId)); 
+        ctx.json(messageById); 
+
+        if(messageById != null)
+        {
+            ctx.json(messageById); 
+            ctx.status(200); 
+            
+        }
+        else
+        {
+            ctx.json(""); 
+            ctx.status(404); 
+        }
+
+
+    }
+    
+    
+
+
+  
+
+    public void getMessagebyAccountIdHandler(Context ctx) throws JsonProcessingException {
+        String accountIdStr = ctx.pathParam("account_id"); 
+        int accountId = Integer.parseInt(accountIdStr); 
+    
+        List<Message> messages = messageService.gettingMessagesByAccountId(accountId); 
+    
+        if (messages != null || messages.isEmpty()) {
+            ctx.json(messages);
+            ctx.status(200);
+        } else {
+            ctx.json("");
+            ctx.status(400);
+        }
+    }
+
+
+    
+    */

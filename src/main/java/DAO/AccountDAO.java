@@ -1,14 +1,16 @@
 package DAO;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
 import Model.Account;
+import Model.Message;
 import Util.ConnectionUtil;
-
-//import java.sql.*;
-
 
 public class AccountDAO {
     public Account insertAccount(Account account)
@@ -63,8 +65,36 @@ public class AccountDAO {
           return null; 
        }
 
-      
-           
-           
+
+    public List<Account> getAccountById(int accountId) {
+        List<Message> messages = new ArrayList<>();
+        List<Account> accounts = new ArrayList<>(); 
+    
+        Connection connection = ConnectionUtil.getConnection();
+    
+        try {
+            String sql = "SELECT * FROM message WHERE posted_by = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, accountId);
+    
+            ResultSet resultSet = preparedStatement.executeQuery();
+    
+            while (resultSet.next()) {
+                Message message = new Message(
+                        resultSet.getInt("message_id"),
+                        resultSet.getInt("posted_by"),
+                        resultSet.getString("message_text"),
+                        resultSet.getLong("time_posted_epoch")
+                );
+                messages.add(message);
+            }
+    
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    
+        return accounts;
+    }
+    
     
 }
