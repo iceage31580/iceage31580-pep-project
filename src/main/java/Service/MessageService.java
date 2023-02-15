@@ -1,5 +1,7 @@
 package Service;
 
+import static org.mockito.ArgumentMatchers.nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +39,7 @@ public class MessageService {
     public Message getMessageById(int message_id)
     {
        Message message = messageDAO.getMessageById(message_id);
-       //if(message != "")
+       /*if(message != "")
        if (message.getMessage_text().isEmpty())
         {
            return null;
@@ -46,13 +48,23 @@ public class MessageService {
        {
            return message;
        }
+       */
+      if(message == null)
+      {
+        return null; 
+      }
+      else
+      {
+        return message; 
+      }
        
       
     }
 
     public Message deleteMessage(int message_id)
     {
-        if(messageDAO.getMessageById(message_id) != null)
+       /* 
+       if(messageDAO.getMessageById(message_id) != null)
         {
 
         Message message = messageDAO.getMessageById(message_id);
@@ -61,6 +73,16 @@ public class MessageService {
 
          }
          return null;
+         */
+
+         Message message = messageDAO.getMessageById(message_id); 
+         messageDAO.deleteMessages(message_id); 
+
+         if(message == null)
+         {
+                return null; 
+         }
+         return message; 
     }
 
     public Message updateMessages(int message_id, Message message)

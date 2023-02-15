@@ -122,6 +122,7 @@ public class SocialMediaController {
 
     private void deleteResponseHandler(Context ctx) throws JsonProcessingException
         {
+            /* 
             ObjectMapper mapper = new ObjectMapper(); 
             int messageID = Integer.parseInt(ctx.pathParam("message_id")); 
             Message deletedMessage = messageService.deleteMessage(messageID); 
@@ -136,6 +137,21 @@ public class SocialMediaController {
             {
                 ctx.status(400); 
             }
+            */
+            int message_id = Integer.parseInt(ctx.pathParam("message_id")); 
+            Message message = messageService.deleteMessage(message_id); 
+            if(message != null)
+            {
+                ctx.json(message); 
+                ctx.status(200);
+
+            }
+            else
+            {
+                //ctx.status(200); 
+            }
+
+
         }
 
         private void updateResponseHandler(Context ctx) throws JsonProcessingException
@@ -144,26 +160,29 @@ public class SocialMediaController {
         Message message = mapper.readValue(ctx.body(), Message.class); 
         int updatedMessage = Integer.parseInt(ctx.pathParam("message_id")); 
         Message existingMessage = messageService.updateMessages(updatedMessage, message); 
-        if(existingMessage != null)
+        //if(existingMessage != null)
+        if(existingMessage == null || existingMessage.message_text.isBlank())
         {
-            ctx.json(mapper.writeValueAsString(existingMessage)); 
-            ctx.status(200); 
+           // ctx.json(mapper.writeValueAsString(existingMessage)); 
+            //ctx.status(200); 
+            ctx.status(400); 
         }
         else
         {
-            ctx.status(400); 
+           // ctx.status(400); 
+           ctx.json(existingMessage); 
         }
-
-        
 
     }
 
     
 
     private void getMessagebyAccountIdHandler(Context ctx)throws JsonProcessingException {
-        List<Message> messages = messageService.returnMessagebyAccountID(1);
-        ctx.json(messages);
+        int posted_by = Integer.parseInt(ctx.pathParam("account_id")); 
+        List<Message> messages = messageService.returnMessagebyAccountID(posted_by);
+        ctx.json(messages); 
     }
+    
     
    
 }

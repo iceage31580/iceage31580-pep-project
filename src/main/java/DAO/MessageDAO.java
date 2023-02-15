@@ -73,7 +73,8 @@ public class MessageDAO {
             } else 
             {
                 // return an empty message to indicate that the requested message does not exist
-                return new Message(0, 0, "", 0);          
+                //return new Message(0, 0, "", 0);        
+                return null;   
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());       
@@ -130,7 +131,7 @@ public class MessageDAO {
         
     }
 
-    public List<Message> returnMessagebyAccountID(int account_id)
+    public List<Message> returnMessagebyAccountID(int posted_by)
     {
         Connection connection = ConnectionUtil.getConnection();//need a list here 
         List<Message> messages = new ArrayList<>(); 
@@ -139,7 +140,7 @@ public class MessageDAO {
             String sql = "SELECT * FROM message WHERE posted_by = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql); 
 
-            preparedStatement.setInt(1,account_id); 
+            preparedStatement.setInt(1,posted_by); 
 
             ResultSet rs = preparedStatement.executeQuery();
 
